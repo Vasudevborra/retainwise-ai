@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Intelligence Studio - Behavioral Segmentation & LLM Engine</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    /* Safe CSS variable fallbacks for both embedded and standalone browser viewing */
+    :root {
+      --background: #0f172a;
+      --card: #1e293b;
+      --content: #1e293b;
+      --border: #334155;
+      --foreground: #f8fafc;
+      --muted-foreground: #94a3b8;
+      --primary: #3b82f6;
+      --primary-foreground: #ffffff;
+      --secondary: #6366f1;
+      --accent: #10b981;
+      --accent-warn: #f59e0b;
+      --accent-danger: #ef4444;
+    }
+    .light {
+      --background: #f8fafc;
+      --card: #ffffff;
+      --content: #ffffff;
+      --border: #e2e8f0;
+      --foreground: #0f172a;
+      --muted-foreground: #64748b;
+      --primary: #2563eb;
+      --primary-foreground: #ffffff;
+      --secondary: #4f46e5;
+      --accent: #059669;
+      --accent-warn: #d97706;
+      --accent-danger: #dc2626;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.1);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.3);
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.5);
+    }
+    .tab-btn.active {
+      background-color: var(--primary);
+      color: var(--primary-foreground);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased p-3 md:p-6 custom-scrollbar">
+
+  <!-- TOP HEADER & BRANDING -->
+  <header class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-[var(--border)] pb-4">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center justify-center p-2 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+        </span>
+        <div>
+          <h1 class="text-xl md:text-2xl font-bold tracking-tight text-[var(--foreground)]">Antigravity Customer Intelligence Studio</h1>
+          <p class="text-xs md:text-sm text-[var(--muted-foreground)]">Behavioral Segmentation &amp; Grounded LLM Decision Architecture</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- STATS STRIP -->
+    <div class="flex flex-wrap items-center gap-2">
+      <div class="px-3 py-1.5 rounded-lg bg-[var(--card)] border border-[var(--border)] text-xs">
+        <span class="text-[var(--muted-foreground)]">Analyzed Customers:</span>
+        <span class="font-semibold text-blue-400 ml-1">100,000</span>
+      </div>
+      <div class="px-3 py-1.5 rounded-lg bg-[var(--card)] border border-[var(--border)] text-xs">
+        <span class="text-[var(--muted-foreground)]">Active Segments:</span>
+        <span class="font-semibold text-emerald-400 ml-1">5 Clusters</span>
+      </div>
+      <div class="px-3 py-1.5 rounded-lg bg-[var(--card)] border border-[var(--border)] text-xs">
+        <span class="text-[var(--muted-foreground)]">Total GMV:</span>
+        <span class="font-semibold text-purple-400 ml-1">$14.28M</span>
+      </div>
+      <div class="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-400 font-medium flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        ML Engine In-Sync
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION TABS -->
+  <nav class="mb-6 flex overflow-x-auto gap-2 p-1.5 rounded-xl bg-[var(--card)] border border-[var(--border)] custom-scrollbar">
+    <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn active px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+      Executive Overview
+    </button>
+    <button onclick="switchTab('explorer')" id="tab-explorer" class="tab-btn px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2 text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+      Segment Deep-Dive
+    </button>
+    <button onclick="switchTab('customer360')" id="tab-customer360" class="tab-btn px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2 text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+      Customer 360 Explainability
+    </button>
+    <button onclick="switchTab('nlq')" id="tab-nlq" class="tab-btn px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2 text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+      NLQ Marketing Analyst
+    </button>
+    <button onclick="switchTab('campaign')" id="tab-campaign" class="tab-btn px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2 text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
+      Campaign Generator
+    </button>
+    <button onclick="switchTab('comparison')" id="tab-comparison" class="tab-btn px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2 text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m0 0l-6-6m6 6H3"></path></svg>
+      Demographic vs. Behavioral Impact
+    </button>
+  </nav>
+
+  <!-- TAB 1: EXECUTIVE OVERVIEW -->
+  <main id="content-overview" class="space-y-6">
+    <!-- TOP KPI CARDS -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-[var(--card)] p-4 rounded-xl border border-[var(--border)] shadow-sm">
+        <div class="flex items-center justify-between text-[var(--muted-foreground)] mb-1 text-xs">
+          <span>Total Net Revenue</span>
+          <span class="text-emerald-400 font-semibold">+14.2% YoY</span>
+        </div>
+        <div class="text-2xl font-bold text-[var(--foreground)]">$14,280,000</div>
+        <p class="text-xs text-[var(--muted-foreground)] mt-1">100,000 total transacting accounts</p>
+      </div>
+      <div class="bg-[var(--card)] p-4 rounded-xl border border-[var(--border)] shadow-sm">
+        <div class="flex items-center justify-between text-[var(--muted-foreground)] mb-1 text-xs">
+          <span>Average Order Value</span>
+          <span class="text-blue-400 font-semibold">Indexed at $72 Median</span>
+        </div>
+        <div class="text-2xl font-bold text-[var(--foreground)]">$94.20</div>
+        <p class="text-xs text-[var(--muted-foreground)] mt-1">$164.20 in Champion Segment</p>
+      </div>
+      <div class="bg-[var(--card)] p-4 rounded-xl border border-[var(--border)] shadow-sm">
+        <div class="flex items-center justify-between text-[var(--muted-foreground)] mb-1 text-xs">
+          <span>At-Risk Revenue Exposure</span>
+          <span class="text-rose-400 font-semibold">Urgent Priority</span>
+        </div>
+        <div class="text-2xl font-bold text-rose-400">$3,460,800</div>
+        <p class="text-xs text-[var(--muted-foreground)] mt-1">4,120 High-Value Dormant Elites</p>
+      </div>
+      <div class="bg-[var(--card)] p-4 rounded-xl border border-[var(--border)] shadow-sm">
+        <div class="flex items-center justify-between text-[var(--muted-foreground)] mb-1 text-xs">
+          <span>Protected Gross Margin</span>
+          <span class="text-emerald-400 font-semibold">Zero-Discount Levers</span>
+        </div>
+        <div class="text-2xl font-bold text-emerald-400">$482,000</div>
+        <p class="text-xs text-[var(--muted-foreground)] mt-1">Preserved by suppressing VIP promos</p>
+      </div>
+    </div>
+
+    <!-- MAIN SEGMENT SUMMARY TABLE -->
+    <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] overflow-hidden shadow-sm">
+      <div class="p-4 border-b border-[var(--border)] flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <div>
+          <h2 class="font-semibold text-lg text-[var(--foreground)]">Empirical Behavioral Segments (K=5 Cluster Model)</h2>
+          <p class="text-xs text-[var(--muted-foreground)]">Derived from transaction recency, frequency, monetary value, discount dependency, and digital interaction telemetry.</p>
+        </div>
+        <span class="text-xs px-2.5 py-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono">Silhouette Score: 0.49 (Robust)</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs md:text-sm">
+          <thead class="bg-black/10 text-[var(--muted-foreground)] border-b border-[var(--border)] uppercase text-[11px] tracking-wider">
+            <tr>
+              <th class="p-3">Segment Name</th>
+              <th class="p-3">Customer Count</th>
+              <th class="p-3">% of Base</th>
+              <th class="p-3">Revenue Share</th>
+              <th class="p-3">Avg Order Value</th>
+              <th class="p-3">Discount Dep.</th>
+              <th class="p-3">Churn Risk</th>
+              <th class="p-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[var(--border)]">
+            <tr class="hover:bg-blue-500/5 transition-colors">
+              <td class="p-3 font-semibold text-blue-400 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                High-Velocity Brand Champions
+              </td>
+              <td class="p-3">18,450</td>
+              <td class="p-3">18.5%</td>
+              <td class="p-3 font-semibold text-emerald-400">$5,883,360 (41.2%)</td>
+              <td class="p-3 font-mono">$164.20</td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs">8% (Inelastic)</span></td>
+              <td class="p-3"><span class="text-emerald-400 font-medium">Low (4%)</span></td>
+              <td class="p-3 text-right">
+                <button onclick="inspectSegment(0)" class="text-xs px-2.5 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium">Inspect</button>
+              </td>
+            </tr>
+            <tr class="hover:bg-amber-500/5 transition-colors">
+              <td class="p-3 font-semibold text-amber-400 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                Deal-Driven Opportunity Hunters
+              </td>
+              <td class="p-3">26,200</td>
+              <td class="p-3">26.2%</td>
+              <td class="p-3 font-semibold text-[var(--foreground)]">$2,013,480 (14.1%)</td>
+              <td class="p-3 font-mono">$58.10</td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 text-xs">84% (Extreme)</span></td>
+              <td class="p-3"><span class="text-amber-400 font-medium">High (42%)</span></td>
+              <td class="p-3 text-right">
+                <button onclick="inspectSegment(1)" class="text-xs px-2.5 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium">Inspect</button>
+              </td>
+            </tr>
+            <tr class="hover:bg-rose-500/5 transition-colors">
+              <td class="p-3 font-semibold text-rose-400 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                High-Value Dormant Elites
+              </td>
+              <td class="p-3">4,120</td>
+              <td class="p-3">4.1%</td>
+              <td class="p-3 font-semibold text-purple-400">$2,598,960 (18.2%)</td>
+              <td class="p-3 font-mono">$182.00</td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs">12% (Inelastic)</span></td>
+              <td class="p-3"><span class="text-rose-400 font-medium">Critical (78%)</span></td>
+              <td class="p-3 text-right">
+                <button onclick="inspectSegment(2)" class="text-xs px-2.5 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium">Inspect</button>
+              </td>
+            </tr>
+            <tr class="hover:bg-purple-500/5 transition-colors">
+              <td class="p-3 font-semibold text-purple-400 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+                Digital Window Shoppers
+              </td>
+              <td class="p-3">32,130</td>
+              <td class="p-3">32.1%</td>
+              <td class="p-3 font-semibold text-[var(--foreground)]">$1,199,520 (8.4%)</td>
+              <td class="p-3 font-mono">$38.40</td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs">45% (Moderate)</span></td>
+              <td class="p-3"><span class="text-amber-400 font-medium">Moderate (28%)</span></td>
+              <td class="p-3 text-right">
+                <button onclick="inspectSegment(3)" class="text-xs px-2.5 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium">Inspect</button>
+              </td>
+            </tr>
+            <tr class="hover:bg-emerald-500/5 transition-colors">
+              <td class="p-3 font-semibold text-emerald-400 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                Steady Low-Maintenance Essentials
+              </td>
+              <td class="p-3">19,100</td>
+              <td class="p-3">19.1%</td>
+              <td class="p-3 font-semibold text-emerald-400">$2,584,680 (18.1%)</td>
+              <td class="p-3 font-mono">$92.10</td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs">14% (Low)</span></td>
+              <td class="p-3"><span class="text-emerald-400 font-medium">Low (8%)</span></td>
+              <td class="p-3 text-right">
+                <button onclick="inspectSegment(4)" class="text-xs px-2.5 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium">Inspect</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VISUALIZATIONS: MATRIX AND QUADRANT -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      
+      <!-- CHART 1: CUSTOMER VALUE VS ENGAGEMENT MATRIX -->
+      <div class="bg-[var(--card)] p-5 rounded-xl border border-[var(--border)] shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-semibold text-[var(--foreground)]">Customer Value vs. Digital Engagement</h3>
+            <p class="text-xs text-[var(--muted-foreground)]">Bubble size represents total cohort revenue contribution</p>
+          </div>
+          <span class="text-xs text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded">2D Behavioral Map</span>
+        </div>
+        <div class="relative h-64 w-full border border-dashed border-[var(--border)] rounded-lg p-2 bg-black/20 flex flex-col justify-between">
+          <!-- Quadrant Labels -->
+          <div class="absolute top-2 left-2 text-[10px] text-rose-400/80 font-semibold uppercase">High Value / Low Engagement (At-Risk)</div>
+          <div class="absolute top-2 right-2 text-[10px] text-blue-400/80 font-semibold uppercase">High Value / High Engagement (Core VIP)</div>
+          <div class="absolute bottom-2 left-2 text-[10px] text-amber-400/80 font-semibold uppercase">Low Value / Low Engagement (Dormant)</div>
+          <div class="absolute bottom-2 right-2 text-[10px] text-purple-400/80 font-semibold uppercase">Low Value / High Engagement (Opportunity)</div>
+          
+          <!-- Axis Guide Lines -->
+          <div class="absolute top-1/2 left-0 right-0 border-t border-[var(--border)] border-dashed"></div>
+          <div class="absolute top-0 bottom-0 left-1/2 border-l border-[var(--border)] border-dashed"></div>
+
+          <!-- Scatter Bubbles -->
+          <!-- 1. Champions: Top Right -->
+          <div onclick="inspectSegment(0)" class="cursor-pointer group absolute top-8 right-16 flex flex-col items-center">
+            <div class="w-16 h-16 rounded-full bg-blue-500/40 border-2 border-blue-400 flex items-center justify-center text-xs font-bold text-white shadow-lg transition-transform group-hover:scale-110">
+              41.2%
+            </div>
+            <span class="text-[11px] font-medium text-blue-300 mt-1">Champions</span>
+          </div>
+
+          <!-- 2. Dormant Elites: Top Left -->
+          <div onclick="inspectSegment(2)" class="cursor-pointer group absolute top-12 left-14 flex flex-col items-center">
+            <div class="w-12 h-12 rounded-full bg-rose-500/40 border-2 border-rose-400 flex items-center justify-center text-xs font-bold text-white shadow-lg transition-transform group-hover:scale-110">
+              18.2%
+            </div>
+            <span class="text-[11px] font-medium text-rose-300 mt-1">Dormant Elites</span>
+          </div>
+
+          <!-- 3. Steady Essentials: Center -->
+          <div onclick="inspectSegment(4)" class="cursor-pointer group absolute top-28 left-48 flex flex-col items-center">
+            <div class="w-12 h-12 rounded-full bg-emerald-500/40 border-2 border-emerald-400 flex items-center justify-center text-xs font-bold text-white shadow-lg transition-transform group-hover:scale-110">
+              18.1%
+            </div>
+            <span class="text-[11px] font-medium text-emerald-300 mt-1">Steady Essentials</span>
+          </div>
+
+          <!-- 4. Window Shoppers: Bottom Right -->
+          <div onclick="inspectSegment(3)" class="cursor-pointer group absolute bottom-8 right-12 flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-purple-500/40 border-2 border-purple-400 flex items-center justify-center text-[10px] font-bold text-white shadow-lg transition-transform group-hover:scale-110">
+              8.4%
+            </div>
+            <span class="text-[11px] font-medium text-purple-300 mt-1">Window Shoppers</span>
+          </div>
+
+          <!-- 5. Deal Hunters: Bottom Center-Left -->
+          <div onclick="inspectSegment(1)" class="cursor-pointer group absolute bottom-10 left-28 flex flex-col items-center">
+            <div class="w-11 h-11 rounded-full bg-amber-500/40 border-2 border-amber-400 flex items-center justify-center text-xs font-bold text-white shadow-lg transition-transform group-hover:scale-110">
+              14.1%
+            </div>
+            <span class="text-[11px] font-medium text-amber-300 mt-1">Deal Hunters</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHART 2: REVENUE VS CUSTOMER COUNT PARETO -->
+      <div class="bg-[var(--card)] p-5 rounded-xl border border-[var(--border)] shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-semibold text-[var(--foreground)]">Audience Volume vs. Revenue Generation</h3>
+            <p class="text-xs text-[var(--muted-foreground)]">Demonstrates high revenue concentration in behaviorally loyal cohorts</p>
+          </div>
+          <span class="text-xs text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded">Pareto Divergence</span>
+        </div>
+
+        <div class="space-y-3.5 pt-2">
+          <!-- Champions -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="font-medium text-blue-400">High-Velocity Champions</span>
+              <span class="text-[var(--muted-foreground)]">18.5% Users ──► <strong class="text-emerald-400 font-bold">41.2% GMV ($5.88M)</strong></span>
+            </div>
+            <div class="h-3 w-full bg-black/30 rounded-full overflow-hidden flex">
+              <div class="bg-blue-500 h-full rounded-full" style="width: 41.2%"></div>
+            </div>
+          </div>
+
+          <!-- Dormant Elites -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="font-medium text-rose-400">High-Value Dormant Elites</span>
+              <span class="text-[var(--muted-foreground)]">4.1% Users ──► <strong class="text-purple-400 font-bold">18.2% GMV ($2.60M)</strong></span>
+            </div>
+            <div class="h-3 w-full bg-black/30 rounded-full overflow-hidden flex">
+              <div class="bg-rose-500 h-full rounded-full" style="width: 18.2%"></div>
+            </div>
+          </div>
+
+          <!-- Steady Essentials -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="font-medium text-emerald-400">Steady Essentials</span>
+              <span class="text-[var(--muted-foreground)]">19.1% Users ──► <strong class="text-emerald-300 font-bold">18.1% GMV ($2.58M)</strong></span>
+            </div>
+            <div class="h-3 w-full bg-black/30 rounded-full overflow-hidden flex">
+              <div class="bg-emerald-500 h-full rounded-full" style="width: 18.1%"></div>
+            </div>
+          </div>
+
+          <!-- Deal Hunters -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="font-medium text-amber-400">Deal-Driven Hunters</span>
+              <span class="text-[var(--muted-foreground)]">26.2% Users ──► <strong class="text-amber-400 font-bold">14.1% GMV ($2.01M)</strong></span>
+            </div>
+            <div class="h-3 w-full bg-black/30 rounded-full overflow-hidden flex">
+              <div class="bg-amber-500 h-full rounded-full" style="width: 14.1%"></div>
+            </div>
+          </div>
+
+          <!-- Window Shoppers -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="font-medium text-purple-400">Digital Window Shoppers</span>
+              <span class="text-[var(--muted-foreground)]">32.1% Users ──► <strong class="text-purple-300 font-bold">8.4% GMV ($1.20M)</strong></span>
+            </div>
+            <div class="h-3 w-full bg-black/30 rounded-full overflow-hidden flex">
+              <div class="bg-purple-500 h-full rounded-full" style="width: 8.4%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- TAB 2: SEGMENT DEEP-DIVE EXPLORER -->
+  <section id="content-explorer" class="space-y-6 hidden">
+    <!-- SELECTOR PILLS -->
+    <div class="flex flex-wrap gap-2 pb-2">
+      <button onclick="selectExplorerSegment(0)" id="seg-btn-0" class="px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-medium bg-blue-600 text-white border border-blue-400 shadow-sm transition-all">High-Velocity Champions</button>
+      <button onclick="selectExplorerSegment(1)" id="seg-btn-1" class="px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-medium bg-[var(--card)] text-[var(--muted-foreground)] border border-[var(--border)] hover:text-[var(--foreground)] transition-all">Deal-Driven Hunters</button>
+      <button onclick="selectExplorerSegment(2)" id="seg-btn-2" class="px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-medium bg-[var(--card)] text-[var(--muted-foreground)] border border-[var(--border)] hover:text-[var(--foreground)] transition-all">High-Value Dormant Elites</button>
+      <button onclick="selectExplorerSegment(3)" id="seg-btn-3" class="px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-medium bg-[var(--card)] text-[var(--muted-foreground)] border border-[var(--border)] hover:text-[var(--foreground)] transition-all">Digital Window Shoppers</button>
+      <button onclick="selectExplorerSegment(4)" id="seg-btn-4" class="px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-medium bg-[var(--card)] text-[var(--muted-foreground)] border border-[var(--border)] hover:text-[var(--foreground)] transition-all">Steady Essentials</button>
+    </div>
+
+    <!-- MAIN SEGMENT PROFILE CARD -->
+    <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 shadow-sm">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[var(--border)]">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span id="exp-badge" class="px-2.5 py-0.5 rounded text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">CLUSTER 01</span>
+            <span id="exp-churn" class="text-xs text-emerald-400 font-medium">Churn Probability: 4.1% (Healthy)</span>
+          </div>
+          <h2 id="exp-title" class="text-2xl font-bold text-[var(--foreground)]">High-Velocity Brand Champions</h2>
+          <p id="exp-desc" class="text-sm text-[var(--muted-foreground)] mt-1">Frequent, full-price mobile app shoppers with broad cross-category affinity and minimal promotional dependency.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="triggerCampaignForCurrentSegment()" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs md:text-sm shadow-md transition-all flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+            Generate Targeted Campaign Brief
+          </button>
+        </div>
+      </div>
+
+      <!-- KEY METRIC CHIPS -->
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 py-6 border-b border-[var(--border)] text-center">
+        <div class="p-3 bg-black/20 rounded-lg border border-[var(--border)]">
+          <div class="text-[11px] text-[var(--muted-foreground)] uppercase">Customer Count</div>
+          <div id="exp-count" class="text-lg font-bold text-[var(--foreground)] mt-0.5">18,450</div>
+        </div>
+        <div class="p-3 bg-black/20 rounded-lg border border-[var(--border)]">
+          <div class="text-[11px] text-[var(--muted-foreground)] uppercase">Revenue Share</div>
+          <div id="exp-rev" class="text-lg font-bold text-emerald-400 mt-0.5">41.2% ($5.88M)</div>
+        </div>
+        <div class="p-3 bg-black/20 rounded-lg border border-[var(--border)]">
+          <div class="text-[11px] text-[var(--muted-foreground)] uppercase">Avg Order Value</div>
+          <div id="exp-aov" class="text-lg font-bold text-blue-400 mt-0.5">$164.20</div>
+        </div>
+        <div class="p-3 bg-black/20 rounded-lg border border-[var(--border)]">
+          <div class="text-[11px] text-[var(--muted-foreground)] uppercase">Annual Freq</div>
+          <div id="exp-freq" class="text-lg font-bold text-[var(--foreground)] mt-0.5">14.8 orders</div>
+        </div>
+        <div class="p-3 bg-black/20 rounded-lg border border-[var(--border)]">
+          <div class="text-[11px] text-[var(--muted-foreground)] uppercase">Discount Dep.</div>
+          <div id="exp-ddi" class="text-lg font-bold text-emerald-400 mt-0.5">8.0%</div>
+        </div>
+        <div class="p-3 bg-black/20 rounded-lg border border-[var(--border)]">
+          <div class="text-[11px] text-[var(--muted-foreground)] uppercase">Top Channel</div>
+          <div id="exp-channel" class="text-lg font-bold text-purple-400 mt-0.5">Mobile App (82%)</div>
+        </div>
+      </div>
+
+      <!-- 3-PILLAR EXPLANATION: DATA -> INSIGHT -> ACTION -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
+        <!-- WHAT THE DATA TELLS US -->
+        <div class="bg-blue-500/5 rounded-xl p-4 border border-blue-500/20">
+          <div class="flex items-center gap-2 text-blue-400 font-semibold text-sm mb-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            WHAT THE DATA TELLS US
+          </div>
+          <ul id="exp-data-list" class="text-xs space-y-2 text-[var(--foreground)]">
+            <li>• Purchase cadence average: Every 24 days without promo triggers.</li>
+            <li>• 92% of orders completed at full retail catalog price.</li>
+            <li>• Return rate is only 4.1% (substantially below 12% baseline).</li>
+            <li>• Mobile app accounts for 82% of checkout actions.</li>
+          </ul>
+        </div>
+
+        <!-- WHAT MARKETING SHOULD DO -->
+        <div class="bg-emerald-500/5 rounded-xl p-4 border border-emerald-500/20">
+          <div class="flex items-center gap-2 text-emerald-400 font-semibold text-sm mb-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            WHAT MARKETING SHOULD DO
+          </div>
+          <ul id="exp-action-list" class="text-xs space-y-2 text-[var(--foreground)]">
+            <li>• <strong>Withhold monetary discount codes</strong> to protect 68%+ gross margins.</li>
+            <li>• Offer VIP experiential perks: Private previews and personal sizing holds.</li>
+            <li>• Channel focus: Priority push notifications and in-app editorial feeds.</li>
+            <li>• Trigger concierge review if inactivity exceeds 35 days.</li>
+          </ul>
+        </div>
+
+        <!-- AI GROUNDED REASONING CHAIN -->
+        <div class="bg-purple-500/5 rounded-xl p-4 border border-purple-500/20">
+          <div class="flex items-center gap-2 text-purple-400 font-semibold text-sm mb-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+            AI REASONING LOGIC CHAIN
+          </div>
+          <div class="text-[11px] space-y-2 text-[var(--muted-foreground)]">
+            <div><strong class="text-blue-400">DATA:</strong> <span id="exp-reason-data">DDI is 0.08 with AOV of $164.20.</span></div>
+            <div><strong class="text-purple-400">INSIGHT:</strong> <span id="exp-reason-insight">Customers demonstrate price-inelastic demand driven by brand desire.</span></div>
+            <div><strong class="text-amber-400">IMPLICATION:</strong> <span id="exp-reason-impl">20% off promotions erode $32.84 in margin per order with zero volume lift.</span></div>
+            <div><strong class="text-emerald-400">RECOMMENDATION:</strong> <span id="exp-reason-rec">Use loyalty status recognition and early access instead of discounting.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3: CUSTOMER 360 EXPLAINABILITY -->
+  <section id="content-customer360" class="space-y-6 hidden">
+    <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 shadow-sm">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[var(--border)]">
+        <div>
+          <h2 class="text-xl font-bold text-[var(--foreground)]">Customer 360 &amp; Explainable Behavioral Attribution</h2>
+          <p class="text-xs text-[var(--muted-foreground)]">Decomposes why an individual customer is assigned to a segment and defines the Next Best Action.</p>
+        </div>
+        
+        <!-- CUSTOMER SELECTOR -->
+        <div class="flex items-center gap-2">
+          <label for="cust-select" class="text-xs text-[var(--muted-foreground)]">Select Customer Record:</label>
+          <select id="cust-select" onchange="renderCustomer(this.value)" class="bg-black/30 border border-[var(--border)] rounded-lg px-3 py-1.5 text-xs text-[var(--foreground)] focus:outline-none focus:border-blue-500">
+            <option value="CUST-84920">CUST-84920 (High-Velocity Champion)</option>
+            <option value="CUST-10492">CUST-10492 (Deal-Driven Hunter)</option>
+            <option value="CUST-39581">CUST-39581 (High-Value Dormant Elite)</option>
+            <option value="CUST-77402">CUST-77402 (Digital Window Shopper)</option>
+            <option value="CUST-52194">CUST-52194 (Steady Low-Maintenance)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-6">
+        <!-- LEFT: CUSTOMER PROFILE OVERVIEW -->
+        <div class="space-y-4">
+          <div class="p-4 rounded-xl bg-black/20 border border-[var(--border)]">
+            <div class="flex items-center justify-between">
+              <span id="c-id" class="font-mono text-sm font-bold text-blue-400">CUST-84920</span>
+              <span id="c-seg-badge" class="px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">Champion</span>
+            </div>
+            <div class="text-xs text-[var(--muted-foreground)] mt-1">Tenure: <span id="c-tenure">28 months</span> | Segment Confidence: <strong id="c-conf" class="text-emerald-400">94.2%</strong></div>
+
+            <div class="mt-4 pt-4 border-t border-[var(--border)] space-y-2 text-xs">
+              <div class="flex justify-between">
+                <span class="text-[var(--muted-foreground)]">Lifetime Realized Value:</span>
+                <span id="c-ltv" class="font-semibold text-emerald-400">$2,420.00</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[var(--muted-foreground)]">Total Completed Orders:</span>
+                <span id="c-orders" class="font-semibold text-[var(--foreground)]">15</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[var(--muted-foreground)]">Days Since Last Purchase:</span>
+                <span id="c-recency" class="font-semibold text-[var(--foreground)]">8 days</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[var(--muted-foreground)]">Discount Dependency:</span>
+                <span id="c-ddi" class="font-semibold text-[var(--foreground)]">4.0%</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[var(--muted-foreground)]">Primary Shopping Channel:</span>
+                <span id="c-channel" class="font-semibold text-purple-400">Mobile App</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[var(--muted-foreground)]">Top Product Affinity:</span>
+                <span id="c-category" class="font-semibold text-[var(--foreground)]">Technical Outerwear</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUPPRESSION GUARDRAILS -->
+          <div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs">
+            <div class="font-semibold text-rose-400 flex items-center gap-1.5 mb-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+              Automated Marketing Suppression Rules
+            </div>
+            <p id="c-suppression" class="text-[var(--muted-foreground)]">SUPPRESS from sitewide 20% discount blasts. Do not send promotional clearance emails.</p>
+          </div>
+        </div>
+
+        <!-- CENTER: WHY IS THIS CUSTOMER IN THIS SEGMENT? (CENTROID DECOMPOSITION) -->
+        <div class="p-5 rounded-xl bg-black/20 border border-[var(--border)]">
+          <h3 class="font-semibold text-sm text-[var(--foreground)] mb-1 flex items-center gap-2">
+            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Why is this customer in this segment?
+          </h3>
+          <p class="text-xs text-[var(--muted-foreground)] mb-4">Centroid distance &amp; feature importance contributions relative to baseline median.</p>
+
+          <div class="space-y-3.5 text-xs">
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-[var(--muted-foreground)]">Spending Velocity (+2.8σ vs Median)</span>
+                <span class="text-emerald-400 font-semibold">+42 pts</span>
+              </div>
+              <div class="h-2 w-full bg-black/40 rounded-full overflow-hidden">
+                <div class="h-full bg-emerald-500 rounded-full" style="width: 88%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-[var(--muted-foreground)]">Inelastic Price Sensitivity (DDI &lt; 0.1)</span>
+                <span class="text-blue-400 font-semibold">+35 pts</span>
+              </div>
+              <div class="h-2 w-full bg-black/40 rounded-full overflow-hidden">
+                <div class="h-full bg-blue-500 rounded-full" style="width: 75%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-[var(--muted-foreground)]">App Session Intensity (18 sessions/mo)</span>
+                <span class="text-purple-400 font-semibold">+28 pts</span>
+              </div>
+              <div class="h-2 w-full bg-black/40 rounded-full overflow-hidden">
+                <div class="h-full bg-purple-500 rounded-full" style="width: 62%"></div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-black/30 rounded-lg border border-[var(--border)] text-xs text-[var(--foreground)] mt-4">
+              <strong class="text-blue-400 font-medium">Diagnostic Explanation:</strong>
+              <p id="c-diagnostic" class="mt-1 text-[var(--muted-foreground)]">Customer demonstrates continuous repeat purchasing at full retail price with high mobile app immersion and virtually zero cart friction.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: WHAT SHOULD THE MARKETER DO NEXT? -->
+        <div class="p-5 rounded-xl bg-blue-500/5 border border-blue-500/20 flex flex-col justify-between">
+          <div>
+            <h3 class="font-semibold text-sm text-blue-400 mb-1 flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+              What should the marketer do next?
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)] mb-4">Prescriptive Next-Best-Action (NBA) engine recommendation.</p>
+
+            <div class="space-y-3 text-xs">
+              <div class="p-3 rounded-lg bg-black/30 border border-[var(--border)]">
+                <span class="text-[11px] text-[var(--muted-foreground)] uppercase">Recommended Action</span>
+                <div id="c-nba" class="font-semibold text-[var(--foreground)] text-sm mt-0.5">Send Private Capsule Pre-Release Invitation</div>
+              </div>
+
+              <div class="p-3 rounded-lg bg-black/30 border border-[var(--border)]">
+                <span class="text-[11px] text-[var(--muted-foreground)] uppercase">Recommended Campaign</span>
+                <div id="c-campaign" class="font-semibold text-blue-400 text-sm mt-0.5">VIP Fall Preview &amp; Concierge Hold</div>
+              </div>
+
+              <div class="p-3 rounded-lg bg-black/30 border border-[var(--border)]">
+                <span class="text-[11px] text-[var(--muted-foreground)] uppercase">Incentive / Offer Structure</span>
+                <div id="c-offer" class="font-semibold text-emerald-400 text-sm mt-0.5">Zero Discount. Complimentary Express Shipping + VIP gift.</div>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="dispatchCustomerAction()" class="mt-6 w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs shadow-md transition-all">
+            Schedule Next-Best-Action Workflow
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 4: NATURAL LANGUAGE QUERY (NLQ) SYSTEM -->
+  <section id="content-nlq" class="space-y-6 hidden">
+    <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 shadow-sm">
+      <div class="pb-4 border-b border-[var(--border)]">
+        <h2 class="text-xl font-bold text-[var(--foreground)] flex items-center gap-2">
+          <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+          Natural Language Marketing Intelligence Query
+        </h2>
+        <p class="text-xs text-[var(--muted-foreground)] mt-1">Converts conversational marketing questions into analytical database queries and delivers grounded, evidence-backed answers.</p>
+      </div>
+
+      <!-- PRE-SET QUERY CHIPS -->
+      <div class="py-4">
+        <div class="text-xs text-[var(--muted-foreground)] mb-2 font-medium">Quick Marketer Questions:</div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="runQuery('Who are our highest-value customers?')" class="text-xs px-3 py-1.5 rounded-full bg-black/30 border border-[var(--border)] hover:border-blue-400 hover:text-blue-400 transition-colors">"Who are our highest-value customers?"</button>
+          <button onclick="runQuery('Which customers are at risk of churn?')" class="text-xs px-3 py-1.5 rounded-full bg-black/30 border border-[var(--border)] hover:border-rose-400 hover:text-rose-400 transition-colors">"Which customers are at risk of churn?"</button>
+          <button onclick="runQuery('Which segment responds most strongly to discounts?')" class="text-xs px-3 py-1.5 rounded-full bg-black/30 border border-[var(--border)] hover:border-amber-400 hover:text-amber-400 transition-colors">"Which segment responds most strongly to discounts?"</button>
+          <button onclick="runQuery('Which customers have high engagement but low purchase frequency?')" class="text-xs px-3 py-1.5 rounded-full bg-black/30 border border-[var(--border)] hover:border-purple-400 hover:text-purple-400 transition-colors">"Which customers have high engagement but low purchase frequency?"</button>
+          <button onclick="runQuery('Compare our loyal customers with our promotion-sensitive customers.')" class="text-xs px-3 py-1.5 rounded-full bg-black/30 border border-[var(--border)] hover:border-emerald-400 hover:text-emerald-400 transition-colors">"Compare our loyal customers with our promotion-sensitive customers."</button>
+        </div>
+      </div>
+
+      <!-- INPUT BAR -->
+      <div class="flex gap-2 mb-6">
+        <input type="text" id="nlq-input" placeholder="Ask any question about your customers, segments, or marketing campaigns..." value="Which segment responds most strongly to discounts?" class="flex-1 bg-black/40 border border-[var(--border)] rounded-lg px-4 py-2.5 text-xs md:text-sm text-[var(--foreground)] focus:outline-none focus:border-blue-500">
+        <button onclick="runQuery(document.getElementById('nlq-input').value)" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs md:text-sm shadow-md transition-all flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          Ask Assistant
+        </button>
+      </div>
+
+      <!-- LIVE QUERY RESULT CONTAINER -->
+      <div id="nlq-result" class="bg-black/30 rounded-xl border border-[var(--border)] p-5 space-y-4">
+        <!-- SIMULATED SQL / ANALYTICAL QUERY -->
+        <div class="flex items-center justify-between border-b border-[var(--border)] pb-2 text-xs">
+          <span class="text-[var(--muted-foreground)] flex items-center gap-1.5 font-mono">
+            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            Grounding Query Executed Successfully (0.042s)
+          </span>
+          <span class="text-emerald-400 font-mono text-[11px]">Strict Epistemic Mode: Anti-Hallucination Active</span>
+        </div>
+
+        <div id="nlq-sql" class="bg-black/50 p-2.5 rounded font-mono text-[11px] text-blue-300 overflow-x-auto">
+          SELECT segment_name, COUNT(*) AS users, AVG(discount_dependency_index) AS avg_ddi, AVG(order_value) AS aov FROM customer_features GROUP BY segment_name ORDER BY avg_ddi DESC;
+        </div>
+
+        <!-- SYNTHESIZED ANSWER -->
+        <div class="space-y-3 pt-2 text-xs md:text-sm leading-relaxed">
+          <div id="nlq-answer">
+            <p class="font-semibold text-amber-400 mb-1">Identified Segment: Deal-Driven Opportunity Hunters (Cluster 2)</p>
+            <p class="text-[var(--foreground)]">This segment demonstrates by far the strongest responsiveness to promotions, with an average <strong>Discount Dependency Index (DDI) of 0.84</strong> (84% of their completed transactions incorporate a promotional voucher or clearance discount code).</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 my-3">
+              <div class="p-3 rounded bg-black/40 border border-[var(--border)]">
+                <div class="text-[11px] text-[var(--muted-foreground)]">Segment Audience</div>
+                <div class="text-base font-bold text-[var(--foreground)] mt-0.5">26,200 Customers</div>
+              </div>
+              <div class="p-3 rounded bg-black/40 border border-[var(--border)]">
+                <div class="text-[11px] text-[var(--muted-foreground)]">Discount Dependency</div>
+                <div class="text-base font-bold text-rose-400 mt-0.5">84.0% of Orders</div>
+              </div>
+              <div class="p-3 rounded bg-black/40 border border-[var(--border)]">
+                <div class="text-[11px] text-[var(--muted-foreground)]">Gross Margin %</div>
+                <div class="text-base font-bold text-amber-400 mt-0.5">38.2% (Low Margin)</div>
+              </div>
+            </div>
+
+            <p class="text-[var(--muted-foreground)]"><strong>Strategic Action:</strong> Do not send blanket percentage discounts. Instead, enforce minimum spend hurdles (e.g., "$25 off $120+") or multi-item bundles ("Buy 2, Get 1 Free on seasonal clearance") to preserve unit margin economics.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 5: CAMPAIGN GENERATOR -->
+  <section id="content-campaign" class="space-y-6 hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- CONTROLS PANEL -->
+      <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] p-5 shadow-sm space-y-4">
+        <div>
+          <h2 class="font-bold text-base text-[var(--foreground)]">Campaign Configuration</h2>
+          <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Tune the generative parameters to produce targeted campaign briefs.</p>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="block text-[var(--muted-foreground)] mb-1 font-medium">Target Segment:</label>
+            <select id="cg-segment" class="w-full bg-black/30 border border-[var(--border)] rounded-lg p-2 text-[var(--foreground)]">
+              <option value="0">High-Velocity Brand Champions</option>
+              <option value="1">Deal-Driven Opportunity Hunters</option>
+              <option value="2" selected>High-Value Dormant Elites</option>
+              <option value="3">Digital Window Shoppers</option>
+              <option value="4">Steady Low-Maintenance Essentials</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[var(--muted-foreground)] mb-1 font-medium">Marketing Objective:</label>
+            <select id="cg-obj" class="w-full bg-black/30 border border-[var(--border)] rounded-lg p-2 text-[var(--foreground)]">
+              <option value="reactivation">Win-Back &amp; Churn Mitigation</option>
+              <option value="upsell">Cross-Sell &amp; Category Expansion</option>
+              <option value="loyalty">Loyalty Status &amp; Advocacy</option>
+              <option value="conversion">Cart Recovery &amp; Hesitation Relief</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[var(--muted-foreground)] mb-1 font-medium">Primary Distribution Channel:</label>
+            <select id="cg-channel" class="w-full bg-black/30 border border-[var(--border)] rounded-lg p-2 text-[var(--foreground)]">
+              <option value="email_sms">Personalized Email + VIP Concierge SMS</option>
+              <option value="app_push">Mobile App Push Notification</option>
+              <option value="onsite_modal">On-Site Dynamic Modal / Exit Nudge</option>
+              <option value="paid_social">Custom Audience Retargeting</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[var(--muted-foreground)] mb-1 font-medium">Brand Voice &amp; Tone:</label>
+            <select id="cg-tone" class="w-full bg-black/30 border border-[var(--border)] rounded-lg p-2 text-[var(--foreground)]">
+              <option value="concierge">Exclusive, Refined &amp; Concierge</option>
+              <option value="urgency">High Urgency &amp; Scarcity</option>
+              <option value="reassuring">Empathetic, Reassuring &amp; Social Proof</option>
+              <option value="functional">Direct, Minimalist &amp; Restock-Driven</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[var(--muted-foreground)] mb-1 font-medium">Offer Structure:</label>
+            <select id="cg-offer" class="w-full bg-black/30 border border-[var(--border)] rounded-lg p-2 text-[var(--foreground)]">
+              <option value="experiential">Experiential Perk / Gift with Purchase ($0 Discount)</option>
+              <option value="hurdle">Tiered Spend Hurdle ($25 off $120+)</option>
+              <option value="guarantee">Free Shipping + 30-Day Wear-Test Guarantee</option>
+              <option value="early_access">VIP Early Access Drop</option>
+            </select>
+          </div>
+
+          <button onclick="generateCampaign()" class="w-full mt-2 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md transition-all flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+            Generate Production Campaign Brief
+          </button>
+        </div>
+      </div>
+
+      <!-- OUTPUT BRIEF DISPLAY -->
+      <div class="lg:col-span-2 bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 shadow-sm flex flex-col justify-between">
+        <div id="campaign-output" class="space-y-4 text-xs md:text-sm">
+          <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+            <div>
+              <span class="text-xs px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono">CAMPAIGN SPECIFICATION</span>
+              <h3 id="c-out-title" class="text-lg font-bold text-[var(--foreground)] mt-1">The Private Atelier Invitation</h3>
+            </div>
+            <button onclick="copyCampaign()" class="text-xs px-3 py-1.5 rounded bg-black/30 border border-[var(--border)] hover:bg-black/50 text-[var(--foreground)] flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+              Copy Brief
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 text-xs bg-black/20 p-3 rounded-lg border border-[var(--border)]">
+            <div><span class="text-[var(--muted-foreground)]">Target Audience:</span> <strong id="c-out-aud" class="text-rose-400">High-Value Dormant Elites (4,120 users)</strong></div>
+            <div><span class="text-[var(--muted-foreground)]">Primary Channel:</span> <strong id="c-out-chan" class="text-purple-400">Personalized Email + Concierge SMS</strong></div>
+            <div><span class="text-[var(--muted-foreground)]">Incentive:</span> <strong id="c-out-off" class="text-emerald-400">Complimentary Leather Gift with $150 Purchase</strong></div>
+            <div><span class="text-[var(--muted-foreground)]">Margin Protection:</span> <strong class="text-emerald-400">Floor at 62% Gross Margin</strong></div>
+          </div>
+
+          <div class="space-y-3 pt-2">
+            <div>
+              <span class="font-semibold text-[var(--foreground)]">Subject Line:</span>
+              <div id="c-out-subject" class="p-2.5 bg-black/40 rounded border border-[var(--border)] font-mono text-xs text-blue-300 mt-1">An exclusive preview reserved for you, {{ customer.first_name }}</div>
+            </div>
+
+            <div>
+              <span class="font-semibold text-[var(--foreground)]">Creative Copy Deck:</span>
+              <div id="c-out-body" class="p-3 bg-black/40 rounded border border-[var(--border)] text-xs text-[var(--foreground)] mt-1 whitespace-pre-line leading-relaxed">
+"Dear {{ customer.first_name }},
+
+True craft takes time—and as someone who appreciates the fine details of our {{ customer.top_category }} collection, you know that quality speaks for itself.
+
+We noticed you haven't visited us in a while. Rather than send an ordinary update, we've reserved an exclusive, complimentary bespoke Leather Card Case with your next order, along with private styling reservations."
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-2">
+              <div>
+                <span class="font-semibold text-[var(--foreground)]">Call-to-Action (CTA):</span>
+                <div id="c-out-cta" class="p-2 bg-black/40 rounded border border-[var(--border)] text-xs font-semibold text-emerald-400 mt-1">[Access Your Private Atelier Selection]</div>
+              </div>
+              <div>
+                <span class="font-semibold text-[var(--foreground)]">Success Metrics:</span>
+                <div class="p-2 bg-black/40 rounded border border-[var(--border)] text-xs text-[var(--muted-foreground)] mt-1">Open Rate ≥ 48% | CTOR ≥ 18.5% | 12% 60d Reactivation</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-[var(--border)] flex justify-between items-center text-xs">
+          <span class="text-[var(--muted-foreground)]">Ready to export directly to Klaviyo, Braze, or Customer.io</span>
+          <button onclick="alert('Campaign blueprint successfully pushed to Marketing Automation Queue!')" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium">Export Audience &amp; Copy</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 6: DEMOGRAPHIC VS BEHAVIORAL COMPARISON -->
+  <section id="content-comparison" class="space-y-6 hidden">
+    <div class="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 shadow-sm">
+      <div class="pb-4 border-b border-[var(--border)]">
+        <h2 class="text-xl font-bold text-[var(--foreground)]">The Margin-Defense Simulation: Demographic vs. Behavioral</h2>
+        <p class="text-xs text-[var(--muted-foreground)] mt-1">Simulate the direct financial impact of shifting from universal demographic discount blasts to behaviorally targeted offers.</p>
+      </div>
+
+      <!-- INTERACTIVE CALCULATOR SLIDERS -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6 p-4 rounded-xl bg-black/20 border border-[var(--border)]">
+        <div>
+          <label class="block text-xs font-semibold text-[var(--foreground)] mb-1">Select Demographic Discount Blast (% Off):</label>
+          <div class="flex items-center gap-3">
+            <input type="range" id="sim-disc" min="10" max="35" value="20" step="5" oninput="runMarginSim()" class="flex-1">
+            <span id="sim-disc-val" class="text-sm font-bold text-amber-400 w-12 text-right">20%</span>
+          </div>
+          <p class="text-[11px] text-[var(--muted-foreground)] mt-1">Typically blasted to entire demographic segment (e.g. 25-34 urban professionals).</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[var(--foreground)] mb-1">Target Audience Size (Customers):</label>
+          <div class="flex items-center gap-3">
+            <input type="range" id="sim-aud" min="20000" max="100000" value="50000" step="5000" oninput="runMarginSim()" class="flex-1">
+            <span id="sim-aud-val" class="text-sm font-bold text-blue-400 w-16 text-right">50,000</span>
+          </div>
+          <p class="text-[11px] text-[var(--muted-foreground)] mt-1">Estimated customer pool eligible for campaign treatment.</p>
+        </div>
+      </div>
+
+      <!-- SIMULATION OUTCOME COMPARISON -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- APPROACH A: DEMOGRAPHIC BLAST -->
+        <div class="p-5 rounded-xl bg-rose-500/5 border border-rose-500/20 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase text-rose-400 tracking-wider">Traditional Demographic Approach</span>
+            <span class="text-[11px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300">Margin-Erosive</span>
+          </div>
+          <h3 class="text-base font-semibold text-[var(--foreground)]">Universal Demographic Blast (Age 25-34)</h3>
+          
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between py-1 border-b border-[var(--border)]">
+              <span class="text-[var(--muted-foreground)]">Discount Offered to All:</span>
+              <span id="sim-demo-rate" class="font-bold text-rose-400">20% Off Everything</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-[var(--border)]">
+              <span class="text-[var(--muted-foreground)]">Price-Inelastic Full-Price Buyers Subsidized:</span>
+              <span id="sim-demo-subsidized" class="font-bold text-[var(--foreground)]">9,225 VIPs</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-[var(--border)]">
+              <span class="text-[var(--muted-foreground)]">Gross Margin Dilution (Wasted Discounts):</span>
+              <span id="sim-demo-loss" class="font-bold text-rose-400">$302,949</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-[var(--border)]">
+              <span class="text-[var(--muted-foreground)]">Unsubscribe &amp; Brand Fatigue Rate:</span>
+              <span class="font-bold text-rose-400">High (1.8% opt-out)</span>
+            </div>
+          </div>
+          <p class="text-[11px] text-[var(--muted-foreground)]">Discounts subsidize high-intent customers who would have bought anyway, training them to wait for future markdowns.</p>
+        </div>
+
+        <!-- APPROACH B: BEHAVIORAL AI ENGINE -->
+        <div class="p-5 rounded-xl bg-emerald-500/5 border border-emerald-500/20 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase text-emerald-400 tracking-wider">Proposed Behavioral AI System</span>
+            <span class="text-[11px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Margin-Accretive</span>
+          </div>
+          <h3 class="text-base font-semibold text-[var(--foreground)]">Behavioral Elasticity Tiering</h3>
+
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between py-1 border-b border-[var(--border)]">
+              <span class="text-[var(--muted-foreground)]">Champions &amp; VIPs Treatment:</span>
+              <span class="font-bold text-blue-400">VIP Early Access ($0 Discount)</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-[var(--border)]">
+              <span class="text-[var(--muted-foreground)]">Deal Seekers Treatment:</span>
+              <span class="font-bold text-amber-400">Targeted Spend Hurdles ($25 off $120)</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-[var(--border)]">
+              <span class="text-[var(--muted-foreground)]">Net Margin Preserved:</span>
+              <span id="sim-ai-saved" class="font-bold text-emerald-400">+$302,949 Preserved</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-[var(--border)]">
+              <span class="text-[var(--muted-foreground)]">Unsubscribe &amp; Fatigue Rate:</span>
+              <span class="font-bold text-emerald-400">Minimized (0.2% opt-out)</span>
+            </div>
+          </div>
+          <p class="text-[11px] text-[var(--muted-foreground)]">Maintains healthy price integrity while stimulating demand only where price elasticity mathematically warrants it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- JAVASCRIPT STATE ENGINE -->
+  <script>
+    // SEGMENT DATASET
+    const segments = [
+      {
+        id: "CLUSTER-01",
+        name: "High-Velocity Brand Champions",
+        count: "18,450",
+        pct: "18.5%",
+        rev: "$5,883,360 (41.2%)",
+        aov: "$164.20",
+        freq: "14.8 orders",
+        ddi: "8.0%",
+        channel: "Mobile App (82%)",
+        churn: "Low (4.1%)",
+        churnColor: "text-emerald-400",
+        badgeColor: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+        desc: "Frequent, full-price mobile app shoppers with broad cross-category affinity and minimal promotional dependency.",
+        data: [
+          "• Purchase cadence average: Every 24 days without promo triggers.",
+          "• 92% of orders completed at full retail catalog price.",
+          "• Return rate is only 4.1% (substantially below 12% baseline).",
+          "• Mobile app accounts for 82% of checkout actions."
+        ],
+        actions: [
+          "• Withhold monetary discount codes to protect 68%+ gross margins.",
+          "• Offer VIP experiential perks: Private previews and personal sizing holds.",
+          "• Channel focus: Priority push notifications and in-app editorial feeds.",
+          "• Trigger concierge review if inactivity exceeds 35 days."
+        ],
+        reasonData: "DDI is 0.08 with AOV of $164.20.",
+        reasonInsight: "Customers demonstrate price-inelastic demand driven by brand desire.",
+        reasonImpl: "20% off promotions erode $32.84 in margin per order with zero volume lift.",
+        reasonRec: "Use loyalty status recognition and early access instead of discounting."
+      },
+      {
+        id: "CLUSTER-02",
+        name: "Deal-Driven Opportunity Hunters",
+        count: "26,200",
+        pct: "26.2%",
+        rev: "$2,013,480 (14.1%)",
+        aov: "$58.10",
+        freq: "4.2 orders",
+        ddi: "84.0%",
+        channel: "Email & Flash Alerts",
+        churn: "High (42.0%)",
+        churnColor: "text-amber-400",
+        badgeColor: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+        desc: "Price-sensitive buyers who only purchase during promotional events and exhibit near-zero full-price loyalty.",
+        data: [
+          "• 84% of orders contain a voucher or clearance discount.",
+          "• Cart abandonment surges to 92% when items return to full price.",
+          "• Average order value drops from $82 to $49 when no sale is active.",
+          "• Traffic spikes almost entirely correlate with seasonal sales."
+        ],
+        actions: [
+          "• Clear excess seasonal inventory through volume bundling.",
+          "• Enforce spend hurdles (e.g. '$25 off $120+') to protect order margins.",
+          "• Utilize flash email alerts and SMS time-limited notices.",
+          "• Avoid high-cost retention gestures; focus on margin preservation."
+        ],
+        reasonData: "DDI is 0.84 with 92% abandonment without promo codes.",
+        reasonInsight: "Extreme price elasticity with minimal brand affinity outside of discounts.",
+        reasonImpl: "Standard sales cannibalize profitability unless volume offsets price concession.",
+        reasonRec: "Enforce multi-item minimum cart hurdles to guarantee positive unit contribution."
+      },
+      {
+        id: "CLUSTER-03",
+        name: "High-Value Dormant Elites",
+        count: "4,120",
+        pct: "4.1%",
+        rev: "$2,598,960 (18.2%)",
+        aov: "$182.00",
+        freq: "Prior 8.4x / Now 0",
+        ddi: "12.0%",
+        channel: "Direct Email / SMS",
+        churn: "Critical (78.0%)",
+        churnColor: "text-rose-400",
+        badgeColor: "bg-rose-500/20 text-rose-400 border-rose-500/30",
+        desc: "Previously top-decile spending customers whose digital engagement and purchases have abruptly flatlined over the last 120 days.",
+        data: [
+          "• Mean days since last purchase is 138.5 days (historical cycle: 38 days).",
+          "• Historical lifetime value exceeds $1,200 (Top 10% of store).",
+          "• Email click-through rate dropped from 22% to 0% in past 90 days.",
+          "• Low return rate historically (under 6%)."
+        ],
+        actions: [
+          "• Immediate white-glove concierge win-back series.",
+          "• Provide complimentary bespoke gift with purchase instead of generic discounts.",
+          "• Conduct personal outreach survey to diagnose friction/service failure.",
+          "• High-priority outbound direct mail or tailored executive email."
+        ],
+        reasonData: "Recency > 120 days with historical spend > $1,200.",
+        reasonInsight: "Severe attrition risk among previously loyal, profitable accounts.",
+        reasonImpl: "Unaddressed churn represents $3.46M in annualized lost revenue.",
+        reasonRec: "Deploy high-touch bespoke gifts and concierge styling invitations."
+      },
+      {
+        id: "CLUSTER-04",
+        name: "Digital Window Shoppers",
+        count: "32,130",
+        pct: "32.1%",
+        rev: "$1,199,520 (8.4%)",
+        aov: "$38.40",
+        freq: "0.8 orders",
+        ddi: "45.0%",
+        channel: "Web Browser & Ads",
+        churn: "Moderate (28.0%)",
+        churnColor: "text-purple-400",
+        badgeColor: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+        desc: "High digital browsing volume, repeated cart additions, but severe drop-off prior to checkout completion.",
+        data: [
+          "• Average 12.4 web browsing sessions per month.",
+          "• Cart abandonment rate sits at 88% (concentrated at shipping screen).",
+          "• Conversion rate from session to purchase is only 0.7%.",
+          "• Frequently view customer reviews and sizing charts."
+        ],
+        actions: [
+          "• Deploy social proof widgets and customer testimonial highlights.",
+          "• Offer low-risk guarantees: Free shipping on first order + 30-day returns.",
+          "• Trigger dynamic exit-intent cart recovery within 3 hours.",
+          "• Suppress heavy discounting to avoid training price gaming."
+        ],
+        reasonData: "88% cart abandonment occurring at shipping calculation.",
+        reasonInsight: "High commercial intent blocked by hesitation over unexpected fees and sizing.",
+        reasonImpl: "Standard sales blasts fail because the friction is logistical, not price-based.",
+        reasonRec: "Offer transparent free shipping thresholds and hassle-free exchange guarantees."
+      },
+      {
+        id: "CLUSTER-05",
+        name: "Steady Low-Maintenance Essentials",
+        count: "19,100",
+        pct: "19.1%",
+        rev: "$2,584,680 (18.1%)",
+        aov: "$92.10",
+        freq: "4.1 orders",
+        ddi: "14.0%",
+        channel: "Direct Web & Search",
+        churn: "Low (8.0%)",
+        churnColor: "text-emerald-400",
+        badgeColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+        desc: "Dependable repeat customers with predictable restock intervals, low service tickets, and low content engagement.",
+        data: [
+          "• Predictable replenishment cadence (standard deviation: ±4.2 days).",
+          "• Return rate is under 2% across all orders.",
+          "• Low marketing email engagement (14% open rate); direct search intent.",
+          "• Concentrated repeat orders on core staple SKUs."
+        ],
+        actions: [
+          "• Transition customers to automated subscription replenishment (5% perk).",
+          "• Provide friction-free 1-click reorder via transactional SMS.",
+          "• Avoid excessive promotional emails that prompt unsubscriptions.",
+          "• Bundle complementary accessories into the standard reorder flow."
+        ],
+        reasonData: "Replenishment occurs on a clockwork 45-day cycle.",
+        reasonInsight: "Customer treats brand as a reliable utility with minimal desire for content.",
+        reasonImpl: "Over-communicating creates unsubscribe risk without driving incremental sales.",
+        reasonRec: "Implement frictionless SMS replenishment triggers and subscription options."
+      }
+    ];
+
+    // CUSTOMER DATASET FOR 360
+    const customers = {
+      "CUST-84920": {
+        id: "CUST-84920",
+        seg: "High-Velocity Champion",
+        segColor: "text-blue-400 bg-blue-500/20 border-blue-500/30",
+        tenure: "28 months",
+        conf: "94.2%",
+        ltv: "$2,420.00",
+        orders: "15",
+        recency: "8 days",
+        ddi: "4.0%",
+        channel: "Mobile App",
+        category: "Technical Outerwear",
+        suppression: "SUPPRESS from sitewide 20% discount blasts. Do not send promotional clearance emails.",
+        diagnostic: "Customer demonstrates continuous repeat purchasing at full retail price with high mobile app immersion and virtually zero cart friction.",
+        nba: "Send Private Capsule Pre-Release Invitation",
+        campaign: "VIP Fall Preview & Concierge Hold",
+        offer: "Zero Discount. Complimentary Express Shipping + VIP gift."
+      },
+      "CUST-10492": {
+        id: "CUST-10492",
+        seg: "Deal-Driven Hunter",
+        segColor: "text-amber-400 bg-amber-500/20 border-amber-500/30",
+        tenure: "14 months",
+        conf: "91.8%",
+        ltv: "$348.60",
+        orders: "6",
+        recency: "28 days",
+        ddi: "88.0%",
+        channel: "Promotional Email",
+        category: "Clearance Apparel",
+        suppression: "DO NOT send high-end brand editorial or non-promotional drops. Avoid full-price catalog mailers.",
+        diagnostic: "Purchases occur strictly during coupon-eligible events; cart abandonment exceeds 90% when discounts expire.",
+        nba: "Deploy Multi-Item Bundle Clearance Offer",
+        campaign: "Seasonal Clearance Volume Builder",
+        offer: "Buy 2 Seasonal Items, Get 1 Free (Guaranteed unit margin clearance)."
+      },
+      "CUST-39581": {
+        id: "CUST-39581",
+        seg: "High-Value Dormant Elite",
+        segColor: "text-rose-400 bg-rose-500/20 border-rose-500/30",
+        tenure: "36 months",
+        conf: "96.5%",
+        ltv: "$1,820.00",
+        orders: "11",
+        recency: "142 days",
+        ddi: "9.0%",
+        channel: "Personal Email / VIP SMS",
+        category: "Luxury Leather Goods",
+        suppression: "SUPPRESS all automated mass-market sales emails. Exclude from generic discount newsletters.",
+        diagnostic: "Previously steady high-ticket buyer who ceased activity 142 days ago. Indicates severe attrition exposure.",
+        nba: "Trigger Personal Concierge Outreach with Bespoke Gift",
+        campaign: "The Atelier Private Invitation",
+        offer: "Complimentary bespoke leather accessory with $150 order."
+      },
+      "CUST-77402": {
+        id: "CUST-77402",
+        seg: "Digital Window Shopper",
+        segColor: "text-purple-400 bg-purple-500/20 border-purple-500/30",
+        tenure: "3 months",
+        conf: "89.4%",
+        ltv: "$38.40",
+        orders: "1",
+        recency: "18 days",
+        ddi: "50.0%",
+        channel: "Web Browser",
+        category: "Everyday Basics",
+        suppression: "Do not trigger heavy monetary discounts early; prevents coupon gaming.",
+        diagnostic: "High browsing frequency (14 visits/mo) with recurrent cart abandonment at the shipping step.",
+        nba: "Deliver Reassurance & Free Shipping Recovery",
+        campaign: "First-Order Confidence Guarantee",
+        offer: "Free shipping on orders over $45 + 30-day wear-test guarantee."
+      },
+      "CUST-52194": {
+        id: "CUST-52194",
+        seg: "Steady Essential",
+        segColor: "text-emerald-400 bg-emerald-500/20 border-emerald-500/30",
+        tenure: "22 months",
+        conf: "95.1%",
+        ltv: "$552.60",
+        orders: "6",
+        recency: "41 days",
+        ddi: "0.0%",
+        channel: "Direct Web / SMS",
+        category: "Replenishment Care",
+        suppression: "Suppress long-form promotional campaigns. Limit email frequency to 1 contact every 30 days.",
+        diagnostic: "Operates on a predictable 45-day replenishment cadence for staple products with zero discount usage.",
+        nba: "Send 1-Click Replenishment SMS Link",
+        campaign: "Automated Restock Reminder",
+        offer: "5% subscription replenishment discount for automated reorders."
+      }
+    };
+
+    // TAB SWITCHING
+    function switchTab(tabId) {
+      const tabs = ['overview', 'explorer', 'customer360', 'nlq', 'campaign', 'comparison'];
+      tabs.forEach(t => {
+        document.getElementById(`content-${t}`).classList.add('hidden');
+        document.getElementById(`tab-${t}`).classList.remove('active');
+      });
+      document.getElementById(`content-${tabId}`).classList.remove('hidden');
+      document.getElementById(`tab-${tabId}`).classList.add('active');
+    }
+
+    // EXPLORER SEGMENT SELECTION
+    function selectExplorerSegment(idx) {
+      const s = segments[idx];
+      for (let i = 0; i < 5; i++) {
+        const btn = document.getElementById(`seg-btn-${i}`);
+        if (i === idx) {
+          btn.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-medium bg-blue-600 text-white border border-blue-400 shadow-sm transition-all";
+        } else {
+          btn.className = "px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-medium bg-[var(--card)] text-[var(--muted-foreground)] border border-[var(--border)] hover:text-[var(--foreground)] transition-all";
+        }
+      }
+
+      document.getElementById('exp-badge').innerText = s.id;
+      document.getElementById('exp-title').innerText = s.name;
+      document.getElementById('exp-desc').innerText = s.desc;
+      document.getElementById('exp-churn').innerText = `Churn Probability: ${s.churn}`;
+      document.getElementById('exp-churn').className = `text-xs font-medium ${s.churnColor}`;
+
+      document.getElementById('exp-count').innerText = s.count;
+      document.getElementById('exp-rev').innerText = s.rev;
+      document.getElementById('exp-aov').innerText = s.aov;
+      document.getElementById('exp-freq').innerText = s.freq;
+      document.getElementById('exp-ddi').innerText = s.ddi;
+      document.getElementById('exp-channel').innerText = s.channel;
+
+      document.getElementById('exp-data-list').innerHTML = s.data.map(d => `<li>${d}</li>`).join('');
+      document.getElementById('exp-action-list').innerHTML = s.actions.map(a => `<li>${a}</li>`).join('');
+
+      document.getElementById('exp-reason-data').innerText = s.reasonData;
+      document.getElementById('exp-reason-insight').innerText = s.reasonInsight;
+      document.getElementById('exp-reason-impl').innerText = s.reasonImpl;
+      document.getElementById('exp-reason-rec').innerText = s.reasonRec;
+    }
+
+    function inspectSegment(idx) {
+      switchTab('explorer');
+      selectExplorerSegment(idx);
+    }
+
+    // RENDER CUSTOMER 360
+    function renderCustomer(custId) {
+      const c = customers[custId];
+      if (!c) return;
+
+      document.getElementById('c-id').innerText = c.id;
+      document.getElementById('c-seg-badge').innerText = c.seg;
+      document.getElementById('c-seg-badge').className = `px-2 py-0.5 rounded text-[11px] font-semibold border ${c.segColor}`;
+      document.getElementById('c-tenure').innerText = c.tenure;
+      document.getElementById('c-conf').innerText = c.conf;
+      document.getElementById('c-ltv').innerText = c.ltv;
+      document.getElementById('c-orders').innerText = c.orders;
+      document.getElementById('c-recency').innerText = c.recency;
+      document.getElementById('c-ddi').innerText = c.ddi;
+      document.getElementById('c-channel').innerText = c.channel;
+      document.getElementById('c-category').innerText = c.category;
+      document.getElementById('c-suppression').innerText = c.suppression;
+      document.getElementById('c-diagnostic').innerText = c.diagnostic;
+      document.getElementById('c-nba').innerText = c.nba;
+      document.getElementById('c-campaign').innerText = c.campaign;
+      document.getElementById('c-offer').innerText = c.offer;
+    }
+
+    function dispatchCustomerAction() {
+      alert("Next-Best-Action Workflow successfully dispatched to MarTech integration pipeline!");
+    }
+
+    // NATURAL LANGUAGE QUERY SYSTEM
+    function runQuery(q) {
+      document.getElementById('nlq-input').value = q;
+      const qLower = q.toLowerCase();
+
+      let sql = "";
+      let answer = "";
+
+      if (qLower.includes("highest-value") || qLower.includes("valuable")) {
+        sql = "SELECT customer_id, annual_spend, aov, frequency, recency FROM customer_features WHERE segment_name = 'High-Velocity Brand Champions' ORDER BY annual_spend DESC LIMIT 10;";
+        answer = `
+          <p class="font-semibold text-blue-400 mb-1">Identified Segment: High-Velocity Brand Champions (Cluster 1)</p>
+          <p class="text-[var(--foreground)]">Our highest-value customers represent <strong>18.5% of the base (18,450 customers)</strong> but generate <strong>41.2% of total company revenue ($5,883,360)</strong> with an average order value of $164.20.</p>
+          <p class="text-[var(--muted-foreground)] mt-2"><strong>Why they are valuable:</strong> They purchase every 24 days with near-zero reliance on discount codes (DDI = 0.08). They are loyal, price-inelastic, and primarily shop through the mobile app.</p>
+        `;
+      } else if (qLower.includes("churn") || qLower.includes("risk")) {
+        sql = "SELECT segment_name, COUNT(*) AS at_risk_users, SUM(historical_spend) AS revenue_exposure FROM customer_features WHERE days_since_last_purchase > 90 AND engagement_decay_velocity < 0.3 GROUP BY segment_name;";
+        answer = `
+          <p class="font-semibold text-rose-400 mb-1">Identified Segment: High-Value Dormant Elites (Cluster 3)</p>
+          <p class="text-[var(--foreground)]">There are <strong>4,120 customers</strong> currently at imminent risk of permanent churn. Historically, each spent over $1,200 annually, representing <strong>$3,460,800 in total revenue exposure</strong>.</p>
+          <p class="text-[var(--muted-foreground)] mt-2"><strong>Action:</strong> Trigger the personal atelier concierge reactivation series immediately; do not send generic marketing blasts.</p>
+        `;
+      } else if (qLower.includes("discount") || qLower.includes("promotion")) {
+        sql = "SELECT segment_name, COUNT(*) AS users, AVG(discount_dependency_index) AS avg_ddi FROM customer_features GROUP BY segment_name ORDER BY avg_ddi DESC;";
+        answer = `
+          <p class="font-semibold text-amber-400 mb-1">Identified Segment: Deal-Driven Opportunity Hunters (Cluster 2)</p>
+          <p class="text-[var(--foreground)]">This segment demonstrates by far the strongest responsiveness to promotions, with an average <strong>Discount Dependency Index (DDI) of 0.84</strong> (84% of their completed transactions incorporate a promotional voucher).</p>
+          <p class="text-[var(--muted-foreground)] mt-2"><strong>Strategy:</strong> Enforce spend hurdles (e.g. '$25 off $120+') to avoid margin dilution while clearing seasonal excess inventory.</p>
+        `;
+      } else if (qLower.includes("high engagement") || qLower.includes("window")) {
+        sql = "SELECT customer_id, web_sessions_monthly, cart_abandonment_rate, completed_orders FROM customer_features WHERE web_sessions_monthly > 10 AND completed_orders <= 1;";
+        answer = `
+          <p class="font-semibold text-purple-400 mb-1">Identified Segment: Digital Window Shoppers (Cluster 4)</p>
+          <p class="text-[var(--foreground)]">This group of <strong>32,130 users (32.1% of base)</strong> logs an average of 12.4 web sessions per month and has an 88% cart abandonment rate, yet only generates 8.4% of total revenue.</p>
+          <p class="text-[var(--muted-foreground)] mt-2"><strong>Bottleneck:</strong> Drop-offs are concentrated at the shipping cost calculator. Implement free shipping thresholds and customer review highlights to alleviate hesitation.</p>
+        `;
+      } else if (qLower.includes("compare")) {
+        sql = "SELECT 'Champions' AS cohort, COUNT(*), AVG(aov), AVG(ddi), AVG(gross_margin) FROM customer_features WHERE segment_id = 1 UNION ALL SELECT 'Deal Hunters', COUNT(*), AVG(aov), AVG(ddi), AVG(gross_margin) FROM customer_features WHERE segment_id = 2;";
+        answer = `
+          <p class="font-semibold text-blue-400 mb-1">Comparative Cohort Analysis: Champions vs. Deal Hunters</p>
+          <p class="text-[var(--foreground)]">High-Velocity Champions deliver <strong>$164.20 AOV at 68.4% gross margin</strong>, whereas Deal Hunters generate <strong>$58.10 AOV at 38.2% gross margin</strong>.</p>
+          <p class="text-[var(--muted-foreground)] mt-2"><strong>Economic Implication:</strong> Champions yield 2.9x higher net margin per transaction. Marketing spend should prioritize VIP retention over acquiring additional low-margin deal seekers.</p>
+        `;
+      } else {
+        sql = `SELECT * FROM customer_features WHERE semantic_match('${q}') LIMIT 5;`;
+        answer = `
+          <p class="font-semibold text-blue-400 mb-1">Query Result for: "${q}"</p>
+          <p class="text-[var(--foreground)]">The system parsed your question and cross-referenced the customer feature store. The empirical data highlights significant behavioral variation across our 5 active clusters.</p>
+          <p class="text-[var(--muted-foreground)] mt-2">Review the Executive Overview or Segment Explorer tabs for granular metric breakdowns.</p>
+        `;
+      }
+
+      document.getElementById('nlq-sql').innerText = sql;
+      document.getElementById('nlq-answer').innerHTML = answer;
+    }
+
+    // CAMPAIGN GENERATOR
+    function generateCampaign() {
+      const segIdx = document.getElementById('cg-segment').value;
+      const s = segments[segIdx];
+      const tone = document.getElementById('cg-tone').value;
+      const offer = document.getElementById('cg-offer').value;
+      const obj = document.getElementById('cg-obj').value;
+
+      let title = "";
+      let subject = "";
+      let body = "";
+      let cta = "";
+      let offerText = "";
+
+      if (segIdx == 0) {
+        title = "VIP Pre-Release & Private Capsule Access";
+        subject = "An insider preview: Access the new capsule first, {{ customer.first_name }}";
+        body = `"Dear {{ customer.first_name }},\n\nAs one of our most valued members, you receive first access to our limited Autumn release 48 hours before the public launch.\n\nYour preferred {{ customer.top_category }} pieces have been reserved in your personal sizing."`;
+        cta = "[Unlock Your VIP Early Access]";
+        offerText = "Zero Discount. Complimentary Express Shipping + VIP gift.";
+      } else if (segIdx == 1) {
+        title = "Seasonal Clearance Volume Builder";
+        subject = "Limited Time: Tiered Savings on Seasonal Essentials, {{ customer.first_name }}";
+        body = `"Dear {{ customer.first_name }},\n\nFor the next 72 hours, unlock tiered savings on our popular past-season favorites. Stock up on your essentials before they are gone for the season."`;
+        cta = "[Shop Tiered Clearance Event]";
+        offerText = "Tiered Spend Hurdle: $25 off $120+ orders.";
+      } else if (segIdx == 2) {
+        title = "The Private Atelier Win-Back Series";
+        subject = "We've reserved something special for you, {{ customer.first_name }}";
+        body = `"Dear {{ customer.first_name }},\n\nTrue quality takes time. We noticed you haven't visited us in a while, and we would love to welcome you back.\n\nEnjoy a complimentary bespoke Leather Card Case with your next order."`;
+        cta = "[Experience Your Private Atelier Invitation]";
+        offerText = "Complimentary luxury gift with $150 purchase.";
+      } else if (segIdx == 3) {
+        title = "Hesitation Relief & Free Shipping Nudge";
+        subject = "Still thinking about your items, {{ customer.first_name }}? Here is free shipping.";
+        body = `"Dear {{ customer.first_name }},\n\nTake the uncertainty out of online shopping. Complete your order today with complimentary shipping and our 30-day wear-test guarantee."`;
+        cta = "[Complete Order with Free Shipping]";
+        offerText = "Free shipping + 30-day wear-test guarantee.";
+      } else {
+        title = "Automated Replenishment & 1-Click Restock";
+        subject = "Time to restock your essentials, {{ customer.first_name }}?";
+        body = `"Dear {{ customer.first_name }},\n\nBased on your typical restock cycle, it's time to refill your {{ customer.top_category }}. Reorder in one simple click."`;
+        cta = "[1-Click Reorder Essentials]";
+        offerText = "5% subscription discount on recurring refills.";
+      }
+
+      document.getElementById('c-out-title').innerText = title;
+      document.getElementById('c-out-aud').innerText = `${s.name} (${s.count} users)`;
+      document.getElementById('c-out-chan').innerText = document.getElementById('cg-channel').options[document.getElementById('cg-channel').selectedIndex].text;
+      document.getElementById('c-out-off').innerText = offerText;
+      document.getElementById('c-out-subject').innerText = subject;
+      document.getElementById('c-out-body').innerText = body;
+      document.getElementById('c-out-cta').innerText = cta;
+    }
+
+    function triggerCampaignForCurrentSegment() {
+      switchTab('campaign');
+      generateCampaign();
+    }
+
+    function copyCampaign() {
+      const text = document.getElementById('c-out-body').innerText;
+      navigator.clipboard.writeText(text);
+      alert("Campaign brief copied to clipboard!");
+    }
+
+    // MARGIN DEFENSE SIMULATOR
+    function runMarginSim() {
+      const disc = parseInt(document.getElementById('sim-disc').value);
+      const aud = parseInt(document.getElementById('sim-aud').value);
+
+      document.getElementById('sim-disc-val').innerText = `${disc}%`;
+      document.getElementById('sim-aud-val').innerText = aud.toLocaleString();
+
+      document.getElementById('sim-demo-rate').innerText = `${disc}% Off Everything`;
+      
+      // In a 50k demographic audience, ~18.45% are Champions who would buy at full price anyway
+      const subsidizedVips = Math.round(aud * 0.1845);
+      document.getElementById('sim-demo-subsidized').innerText = `${subsidizedVips.toLocaleString()} VIPs`;
+
+      // Average Champion AOV = $164.20
+      const wastedLoss = Math.round(subsidizedVips * 164.20 * (disc / 100));
+      document.getElementById('sim-demo-loss').innerText = `$${wastedLoss.toLocaleString()}`;
+      document.getElementById('sim-ai-saved').innerText = `+$${wastedLoss.toLocaleString()} Preserved`;
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      selectExplorerSegment(0);
+      renderCustomer("CUST-84920");
+      runMarginSim();
+    });
+  </script>
+</body>
+</html>
